@@ -247,8 +247,21 @@
 
   /* ── CONCEPT CROSS-CUT VIEW ── */
   .concept-head { margin-bottom: 8px; }
-  .concept-grid { columns: 22rem; column-gap: 16px; margin-top: 22px; }
-  .concept-card { display: flex; flex-direction: column; gap: 8px; break-inside: avoid; margin-bottom: 16px; }
+  #concept-view .code-pane-header { display: none; }   /* the summary / baseline label already names it */
+  .concept-baseline { margin: 16px 0; }
+  .concept-acc { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; margin-top: 16px; }
+  .acc-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  details.acc { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--surface); }
+  details.acc:hover { border-color: var(--muted); }
+  details.acc > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 9px; padding: 11px 14px; font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); }
+  details.acc > summary::-webkit-details-marker { display: none; }
+  details.acc > summary .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink); flex-shrink: 0; }
+  details.acc > summary .chev { margin-left: auto; color: var(--muted); transition: transform .15s; }
+  details.acc[open] > summary .chev { transform: rotate(90deg); }
+  details.acc .acc-body { border-top: 1px solid var(--border); }
+  details.acc .acc-body .code-pane { border: 0; border-radius: 0; }
+  [data-skin="brutal"] details.acc { border-radius: 0; }
+  @media (max-width: 760px) { .concept-acc { grid-template-columns: 1fr; } }
   .concept-lang { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); display: flex; align-items: center; gap: 8px; }
   .concept-lang::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); flex-shrink: 0; }
   .concept-pseudo { margin-top: 18px; max-width: 760px; background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px; padding: 14px 16px; }

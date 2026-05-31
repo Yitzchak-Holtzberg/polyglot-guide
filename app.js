@@ -133,26 +133,28 @@
     const c = CONCEPTS.find(x => x.key === key);
     if (!c || !conceptView) return false;
     let csPane = null;
-    const cards = [];
+    const items = [];
     for (const lang in c.langs) {
       const sec = document.getElementById(lang + '-' + c.langs[lang]);
       if (!sec) continue;
       if (!csPane) { const cs = sec.querySelector('.cs-pane'); if (cs) csPane = cs.outerHTML; }
       const pane = sec.querySelector('.code-pane:not(.cs-pane)');
-      if (pane) cards.push('<div class="concept-card"><div class="concept-lang" style="--ink:var(--' + lang + ')">' + (LANG_NAMES[lang] || lang) + '</div>' + pane.outerHTML + '</div>');
+      if (pane) items.push({ lang: lang, pane: pane.outerHTML });
     }
-    if (!cards.length) return false;
+    if (!items.length) return false;
+    const det = it => '<details class="acc" style="--ink:var(--' + it.lang + ')"><summary><span class="dot"></span>'
+      + (LANG_NAMES[it.lang] || it.lang) + '<span class="chev">›</span></summary><div class="acc-body">' + it.pane + '</div></details>';
+    const mid = Math.ceil(items.length / 2);
+    const col1 = items.slice(0, mid).map(det).join('');
+    const col2 = items.slice(mid).map(det).join('');
     let html = '<div class="concept-head"><button class="back-btn" data-back>← Back to overview</button><div class="section-label">Concept · across languages</div>'
       + '<h2 class="overview-title">' + c.label + '</h2>'
       + '<p class="overview-lede">' + (c.blurb || 'The same idea, side by side — C# as the baseline, then how each language expresses it.') + '</p>'
       + (c.pseudo ? '<div class="concept-pseudo"><div class="concept-pseudo-label">The idea, in pseudocode</div><pre><code>' + c.pseudo + '</code></pre></div>' : '')
-      + '</div>'
-      + '<div class="concept-grid">';
-    if (csPane) html += '<div class="concept-card"><div class="concept-lang" style="--ink:var(--cs)">C# · baseline</div>' + csPane + '</div>';
-    html += cards.join('') + '</div>';
+      + '</div>';
+    if (csPane) html += '<div class="concept-baseline"><div class="concept-lang" style="--ink:var(--cs)">C# · baseline</div>' + csPane + '</div>';
+    html += '<div class="concept-acc"><div class="acc-col">' + col1 + '</div><div class="acc-col">' + col2 + '</div></div>';
     conceptView.innerHTML = html;
-    conceptView.querySelectorAll('.copy-btn').forEach(b => b.remove());  // drop inert clones
-    addCopyButtons(conceptView);                                          // add live ones
     return true;
   }
 

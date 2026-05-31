@@ -80,25 +80,19 @@
 
   :root {
     --go: #8be9fd;
-    --go-dim: #8be9fd18;
     --ada: #50fa7b;
-    --ada-dim: #50fa7b18;
     --sql: #ffb86c;
-    --sql-dim: #ffb86c18;
     --c: #ff5555;
-    --c-dim: #ff555518;
     --ocaml: #e8834e;
-    --ocaml-dim: #e8834e18;
     --fs: #5cb8e4;
-    --fs-dim: #5cb8e418;
-    --rust: #f74c00; --rust-dim: #f74c0018;
-    --zig: #f7a41d; --zig-dim: #f7a41d18;
-    --hs: #a06bd4; --hs-dim: #a06bd418;
-    --grpc: #2dd4bf; --grpc-dim: #2dd4bf18;
-    --iac: #9b72ff; --iac-dim: #9b72ff18;
-    --k8s: #4d8af0; --k8s-dim: #4d8af018;
-    --docker: #2496ed; --docker-dim: #2496ed18;
-    --cs: #bd93f9; --cs-dim: #bd93f918;
+    --rust: #f74c00;
+    --zig: #f7a41d;
+    --hs: #a06bd4;
+    --grpc: #2dd4bf;
+    --iac: #9b72ff;
+    --k8s: #4d8af0;
+    --docker: #2496ed;
+    --cs: #bd93f9;
     /* theme-independent tokens only — palette colors come from the
        [data-theme] blocks above so they aren't clobbered by source order */
     --active-ink: var(--go);
@@ -116,27 +110,6 @@
   .brand-text { display: flex; flex-direction: column; gap: 2px; line-height: 1.05; }
   .brand-sub { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
   [data-skin="brutal"] .brand-mark { border-radius: 0; border-width: 1.5px; }
-  h1 .go-word    { color: var(--go); }
-  h1 .ada-word   { color: var(--ada); }
-  h1 .sql-word   { color: var(--sql); }
-  h1 .c-word     { color: var(--c); }
-  h1 .ocaml-word { color: var(--ocaml); }
-  h1 .fs-word    { color: var(--fs); }
-  h1 .rust-word  { color: var(--rust); }
-  h1 .zig-word   { color: var(--zig); }
-  h1 .hs-word    { color: var(--hs); }
-  h1 .grpc-word  { color: var(--grpc); }
-  h1 .cs-word    { color: var(--cs); }
-  .lang-badges { display: flex; gap: 6px; align-items: center; margin-left: auto; flex-wrap: wrap; }
-  .badge { font-family: var(--mono); font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 3px; letter-spacing: 0.08em; }
-  .badge.go { background: var(--go-dim); color: var(--go); border: 1px solid var(--go); }
-  .badge.ada { background: var(--ada-dim); color: var(--ada); border: 1px solid var(--ada); }
-  .badge.sql { background: var(--sql-dim); color: var(--sql); border: 1px solid var(--sql); }
-  .badge.c { background: var(--c-dim); color: var(--c); border: 1px solid var(--c); }
-  .badge.ocaml { background: var(--ocaml-dim); color: var(--ocaml); border: 1px solid var(--ocaml); }
-  .badge.fs { background: var(--fs-dim); color: var(--fs); border: 1px solid var(--fs); }
-  .badge.rust { background: var(--rust-dim); color: var(--rust); border: 1px solid var(--rust); }
-  .badge.cs { background: var(--cs-dim); color: var(--cs); border: 1px solid var(--cs); }
 
   /* ── LANGUAGE TABS — segmented, theme-aware, per-language accent ── */
   .lang-bar {
@@ -160,19 +133,23 @@
     border-radius: 8px 8px 0 0; white-space: nowrap;
     transition: color .18s ease, background .18s ease;
   }
-  .lang-btn[data-lang="go"]    { --ink: var(--go); }
-  .lang-btn[data-lang="ada"]   { --ink: var(--ada); }
-  .lang-btn[data-lang="sql"]   { --ink: var(--sql); }
-  .lang-btn[data-lang="c"]     { --ink: var(--c); }
-  .lang-btn[data-lang="ocaml"] { --ink: var(--ocaml); }
-  .lang-btn[data-lang="fs"]    { --ink: var(--fs); }
-  .lang-btn[data-lang="rust"]  { --ink: var(--rust); }
-  .lang-btn[data-lang="zig"]   { --ink: var(--zig); }
-  .lang-btn[data-lang="hs"]    { --ink: var(--hs); }
-  .lang-btn[data-lang="grpc"]  { --ink: var(--grpc); }
-  .lang-btn[data-lang="iac"]   { --ink: var(--iac); }
-  .lang-btn[data-lang="k8s"]   { --ink: var(--k8s); }
-  .lang-btn[data-lang="docker"]{ --ink: var(--docker); }
+  /* One per-language ink map — drives lang-bar accents AND pane dot/label */
+  .lang-btn[data-lang="go"],     .go-pane     { --ink: var(--go); }
+  .lang-btn[data-lang="ada"],    .ada-pane    { --ink: var(--ada); }
+  .lang-btn[data-lang="sql"],    .sql-pane    { --ink: var(--sql); }
+  .lang-btn[data-lang="c"],      .c-pane      { --ink: var(--c); }
+  .lang-btn[data-lang="ocaml"],  .ocaml-pane  { --ink: var(--ocaml); }
+  .lang-btn[data-lang="fs"],     .fs-pane     { --ink: var(--fs); }
+  .lang-btn[data-lang="rust"],   .rust-pane   { --ink: var(--rust); }
+  .lang-btn[data-lang="zig"],    .zig-pane    { --ink: var(--zig); }
+  .lang-btn[data-lang="hs"],     .hs-pane     { --ink: var(--hs); }
+  .lang-btn[data-lang="grpc"],   .grpc-pane   { --ink: var(--grpc); }
+  .lang-btn[data-lang="k8s"],    .k8s-pane    { --ink: var(--k8s); }
+  .lang-btn[data-lang="docker"], .docker-pane { --ink: var(--docker); }
+  .lang-btn[data-lang="iac"]                  { --ink: var(--iac); }
+  .cs-pane    { --ink: var(--cs); }
+  .bicep-pane { --ink: #4eb6ff; }
+  .tf-pane    { --ink: #9b72ff; }
   .lang-btn:hover { color: var(--text); background: var(--hover-bg); }
   .lang-btn.active {
     color: var(--text);
@@ -223,9 +200,7 @@
 
   /* ── SKIN · BRUTALIST: hard rules, condensed display type, accent fills ── */
   [data-skin="brutal"] header { border-bottom: 2px solid var(--text); padding: 12px 20px; }
-  [data-skin="brutal"] h1 { font-family: 'Anton', sans-serif; font-weight: 400; font-size: 21px; text-transform: uppercase; letter-spacing: 0.02em; }
-  [data-skin="brutal"] .badge { border-radius: 0; border-width: 1.5px; }
-  [data-skin="brutal"] .skin-btn { border-radius: 0; }
+  [data-skin="brutal"] h1 { font-family: 'Anton', sans-serif; font-weight: 400; font-size: 21px; text-transform: uppercase; letter-spacing: 0.02em; }  [data-skin="brutal"] .skin-btn { border-radius: 0; }
 
   [data-skin="brutal"] .lang-bar { gap: 0; padding: 0; align-items: stretch; border-bottom: 2px solid var(--text); }
   [data-skin="brutal"] .lang-btn {
@@ -303,38 +278,8 @@
   .copy-btn:hover { color: var(--text); border-color: var(--muted); }
   .copy-btn.copied { color: var(--green); border-color: var(--green); }
   [data-skin="brutal"] .copy-btn { border-radius: 0; }
-  .lang-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .go-pane    .lang-dot { background: var(--go); }
-  .ada-pane   .lang-dot { background: var(--ada); }
-  .sql-pane   .lang-dot { background: var(--sql); }
-  .c-pane     .lang-dot { background: var(--c); }
-  .ocaml-pane .lang-dot { background: var(--ocaml); }
-  .fs-pane    .lang-dot { background: var(--fs); }
-  .cs-pane    .lang-dot { background: var(--cs); }
-  .rust-pane  .lang-dot { background: var(--rust); }
-  .zig-pane   .lang-dot { background: var(--zig); }
-  .hs-pane    .lang-dot { background: var(--hs); }
-  .grpc-pane  .lang-dot { background: var(--grpc); }
-  .bicep-pane .lang-dot { background: #4eb6ff; }
-  .tf-pane    .lang-dot { background: #9b72ff; }
-  .docker-pane .lang-dot { background: #2496ed; }
-  .k8s-pane   .lang-dot { background: #4d8af0; }
-  .lang-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
-  .go-pane    .lang-label { color: var(--go); }
-  .ada-pane   .lang-label { color: var(--ada); }
-  .sql-pane   .lang-label { color: var(--sql); }
-  .c-pane     .lang-label { color: var(--c); }
-  .ocaml-pane .lang-label { color: var(--ocaml); }
-  .fs-pane    .lang-label { color: var(--fs); }
-  .cs-pane    .lang-label { color: var(--cs); }
-  .rust-pane  .lang-label { color: var(--rust); }
-  .zig-pane   .lang-label { color: var(--zig); }
-  .hs-pane    .lang-label { color: var(--hs); }
-  .grpc-pane  .lang-label { color: var(--grpc); }
-  .bicep-pane .lang-label { color: #4eb6ff; }
-  .tf-pane    .lang-label { color: #9b72ff; }
-  .docker-pane .lang-label { color: #2496ed; }
-  .k8s-pane   .lang-label { color: #4d8af0; }
+  .lang-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--ink); }
+  .lang-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; color: var(--ink); }
 
   pre { margin: 0; padding: 16px 18px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: var(--text); scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
   pre code { display: block; }

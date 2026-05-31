@@ -103,6 +103,7 @@
        [data-theme] blocks above so they aren't clobbered by source order */
     --active-ink: var(--go);
     --mono: 'IBM Plex Mono', monospace; --sans: 'Syne', sans-serif;
+    --prose: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
@@ -270,7 +271,7 @@
   .overview-title { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.12; color: var(--text); }
   [data-skin="brutal"] .overview-title { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase; font-size: 38px; letter-spacing: 0.01em; }
   [data-skin="docs"] .overview-title { font-family: 'Sora', sans-serif; font-weight: 700; }
-  .overview-lede { margin-top: 14px; color: var(--muted); font-size: 15px; line-height: 1.65; }
+  .overview-lede { font-family: var(--prose); margin-top: 14px; color: var(--muted); font-size: 15px; line-height: 1.7; }
   .overview-group { margin-top: 30px; }
   .ov-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
   .ov-chip { --ink: var(--accent); font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; padding: 9px 15px; border-radius: 8px; background: none; color: var(--text); border: 1px solid color-mix(in srgb, var(--ink) 45%, var(--border)); transition: background .15s, border-color .15s, transform .15s; }
@@ -697,18 +698,34 @@ a, b, c := <span class="nu">1</span>, <span class="nu">2</span>, <span class="nu
       <div class="code-pane go-pane">
         <div class="code-pane-header"><span class="lang-dot"></span><span class="lang-label">Go</span></div>
         <pre><code><span class="cm">// if — no parens!</span>
-<span class="kw">if</span> x > <span class="nu">0</span> { ... } <span class="kw">else if</span> x < <span class="nu">0</span> { ... } <span class="kw">else</span> { ... }
+<span class="kw">if</span> x > <span class="nu">0</span> {
+    fmt.<span class="fn">Println</span>(<span class="st">"positive"</span>)
+} <span class="kw">else if</span> x < <span class="nu">0</span> {
+    fmt.<span class="fn">Println</span>(<span class="st">"negative"</span>)
+} <span class="kw">else</span> {
+    fmt.<span class="fn">Println</span>(<span class="st">"zero"</span>)
+}
 
-<span class="cm">// for does everything</span>
-<span class="kw">for</span> i := <span class="nu">0</span>; i < <span class="nu">10</span>; i++ { ... }
-<span class="kw">for</span> _, item := <span class="kw">range</span> list { ... } <span class="cm">// foreach</span>
-<span class="kw">for</span> condition { ... }            <span class="cm">// while</span>
-<span class="kw">for</span> { ... }                      <span class="cm">// infinite loop</span>
+<span class="cm">// for does everything — Go's only loop keyword</span>
+<span class="kw">for</span> i := <span class="nu">0</span>; i < <span class="nu">10</span>; i++ {
+    fmt.<span class="fn">Println</span>(i)
+}
+<span class="kw">for</span> _, item := <span class="kw">range</span> list {   <span class="cm">// foreach</span>
+    fmt.<span class="fn">Println</span>(item)
+}
+<span class="kw">for</span> condition {              <span class="cm">// while</span>
+    work()
+}
+<span class="kw">for</span> {                        <span class="cm">// infinite loop</span>
+    <span class="kw">break</span>
+}
 
 <span class="cm">// switch — no break needed, no fallthrough by default</span>
 <span class="kw">switch</span> x {
-<span class="kw">case</span> <span class="nu">1</span>: ...
-<span class="kw">default</span>: ...
+<span class="kw">case</span> <span class="nu">1</span>:
+    handleOne()
+<span class="kw">default</span>:
+    handleRest()
 }</code></pre>
       </div>
     </div>
@@ -1441,7 +1458,10 @@ dict.<span class="fn">Remove</span>(<span class="st">"a"</span>);
 }
 
 <span class="cm">// Iteration</span>
-<span class="kw">foreach</span> (<span class="kw">var</span> (k, v) <span class="kw">in</span> dict) { ... }</code></pre>
+<span class="kw">foreach</span> (<span class="kw">var</span> (k, v) <span class="kw">in</span> dict)
+{
+    <span class="fn">Console</span>.<span class="fn">WriteLine</span>($<span class="st">"{k}={v}"</span>);
+}</code></pre>
       </div>
       <div class="code-pane go-pane">
         <div class="code-pane-header"><span class="lang-dot"></span><span class="lang-label">Go</span></div>
@@ -1461,7 +1481,9 @@ m[<span class="st">"c"</span>] = <span class="nu">3</span>
 n := m[<span class="st">"missing"</span>]   <span class="cm">// n == 0, no panic</span>
 
 <span class="cm">// Iteration (random order — not sorted)</span>
-<span class="kw">for</span> k, v := <span class="kw">range</span> m { ... }</code></pre>
+<span class="kw">for</span> k, v := <span class="kw">range</span> m {
+    fmt.<span class="fn">Println</span>(k, v)
+}</code></pre>
       </div>
     </div>
     <div class="callout info"><strong>Go idiom</strong>The comma-ok pattern (<code>val, ok := m[key]</code>) appears everywhere in Go — map lookups, type assertions, channel receives. It's the idiomatic way to distinguish "zero value" from "not present."</div>

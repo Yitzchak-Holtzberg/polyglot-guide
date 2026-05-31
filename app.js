@@ -1,21 +1,40 @@
-const langBtns  = document.querySelectorAll('.lang-btn');
-  const topicBtns = document.querySelectorAll('.topic-btn');
-  const sections  = document.querySelectorAll('.section');
-
-  let currentLang  = 'go';
-  // ── SINGLE SOURCE OF TRUTH ── add a language/tech here; names, compare list, and
-  //    default topics all derive from it (CSS --ink + section markup are the only other touchpoints).
+  // ── SINGLE SOURCE OF TRUTH ── add a language/tech here (with its topics); the lang
+  //    bar, topic nav, names, compare list & default topics all derive from it.
+  //    (CSS --ink + the section markup are the only other touchpoints.)
   const LANGS = [
-    { key: 'go', name: 'Go' }, { key: 'ada', name: 'Ada' }, { key: 'sql', name: 'SQL' },
-    { key: 'c', name: 'C' }, { key: 'ocaml', name: 'OCaml' }, { key: 'fs', name: 'F#' },
-    { key: 'rust', name: 'Rust' }, { key: 'zig', name: 'Zig' }, { key: 'hs', name: 'Haskell' }
+    { key: 'go', name: 'Go', topics: [['basics','Basics'],['types','Types'],['functions','Functions'],['structs','Structs'],['interfaces','Interfaces'],['errors','Errors'],['concurrency','Concurrency'],['collections','Collections'],['generics','Generics']] },
+    { key: 'ada', name: 'Ada', topics: [['basics','Basics'],['types','Types'],['functions','Subprograms'],['records','Records'],['generics','Generics'],['exceptions','Exceptions'],['concurrency','Concurrency'],['contracts','Contracts'],['packages','Packages']] },
+    { key: 'sql', name: 'SQL', topics: [['basics','Basics'],['filtering','Filtering'],['joins','Joins'],['aggregates','Aggregates'],['windows','Window Fns'],['subqueries','CTEs'],['dml','DML'],['schema','Schema'],['indexes','Indexes'],['advanced','Advanced']] },
+    { key: 'c', name: 'C', topics: [['basics','Basics'],['types','Types'],['pointers','Pointers'],['memory','Memory'],['strings','Strings'],['structs','Structs'],['functions','Functions'],['preprocessor','Preprocessor'],['io','I/O'],['undefined','Undef. Behavior']] },
+    { key: 'ocaml', name: 'OCaml', topics: [['basics','Basics'],['types','Types'],['functions','Functions'],['algebraic','Algebraic Types'],['pattern','Pattern Match'],['modules','Modules'],['collections','Collections'],['effects','Effects & IO'],['objects','Objects'],['advanced','Advanced']] },
+    { key: 'fs', name: 'F#', topics: [['basics','Basics'],['types','Types'],['functions','Functions'],['discriminated','Disc. Unions'],['pattern','Pattern Match'],['collections','Collections'],['async','Async'],['interop','C# Interop'],['computation','Comp. Exprs'],['advanced','Advanced']] },
+    { key: 'rust', name: 'Rust', topics: [['basics','Basics'],['ownership','Ownership'],['borrowing','Borrowing'],['lifetimes','Lifetimes'],['types','Types'],['enums','Enums & Pattern'],['traits','Traits'],['generics','Generics'],['errors','Errors'],['concurrency','Concurrency']] },
+    { key: 'zig', name: 'Zig', topics: [['basics','Basics'],['types','Types'],['pointers','Pointers & Memory'],['optionals','Optionals'],['errors','Errors'],['structs','Structs'],['comptime','comptime & Generics'],['slices','Slices & Arrays']] },
+    { key: 'hs', name: 'Haskell', topics: [['basics','Basics'],['types','Types'],['functions','Functions'],['adts','ADTs'],['typeclasses','Typeclasses'],['maybe','Maybe & Either'],['laziness','Laziness'],['monads','Monads']] }
   ];
   const TECHS = [
-    { key: 'grpc', name: 'gRPC' }, { key: 'iac', name: 'IaC' },
-    { key: 'k8s', name: 'K8s' }, { key: 'docker', name: 'Docker' }
+    { key: 'grpc', name: 'gRPC', topics: [['basics','Basics'],['messages','Messages'],['rpctypes','RPC Types'],['errors','Errors & Status'],['metadata','Metadata & Deadlines'],['versioning','Versioning'],['vsrest','vs REST']] },
+    { key: 'iac', name: 'IaC', topics: [['basics','Basics'],['resources','Resources'],['params','Params & Vars'],['outputs','Outputs'],['modules','Modules'],['state','State & Deploy'],['loops','Loops & Conditions']] },
+    { key: 'k8s', name: 'K8s', topics: [['basics','Basics'],['pods','Pods'],['deployments','Deployments'],['services','Services'],['ingress','Ingress'],['config','Config & Secrets'],['namespaces','Namespaces & Labels'],['probes','Probes & Resources']] },
+    { key: 'docker', name: 'Docker', topics: [['basics','Basics'],['dockerfile','Dockerfile'],['images','Images & Registry'],['run','Run & Exec'],['compose','Compose'],['networking','Networking'],['volumes','Volumes']] }
   ];
   const LANG_NAMES = Object.fromEntries(LANGS.map(l => [l.key, l.name]));
   const CMP_LANGS = LANGS.map(l => l.key);
+
+  // Build the language bar + topic nav from the config above
+  (function buildChrome() {
+    const bar = document.querySelector('.lang-bar');
+    const nav = document.getElementById('topic-nav');
+    const mk = l => '<button class="lang-btn" data-lang="' + l.key + '">' + l.name + '</button>';
+    if (bar) bar.innerHTML = LANGS.map(mk).join('') + '<span class="lang-sep" aria-hidden="true"></span>' + TECHS.map(mk).join('');
+    if (nav) nav.innerHTML = [...LANGS, ...TECHS].map(l =>
+      l.topics.map(t => '<button class="topic-btn" data-lang="' + l.key + '" data-topic="' + t[0] + '">' + t[1] + '</button>').join('')).join('');
+  })();
+
+  const langBtns  = document.querySelectorAll('.lang-btn');
+  const topicBtns = document.querySelectorAll('.topic-btn');
+  const sections  = document.querySelectorAll('.section');
+  let currentLang  = 'go';
   let currentTopic = Object.fromEntries([...LANGS, ...TECHS].map(l => [l.key, 'basics']));
 
   function activate(lang, topic) {
@@ -376,6 +395,20 @@ const langBtns  = document.querySelectorAll('.lang-btn');
     });
   }
   addCopyButtons(document);
+
+  // ── KEYBOARD NAV ── ←/→ move between a language's topics; Esc returns to the overview
+  document.addEventListener('keydown', e => {
+    const tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+    if (e.key === 'Escape') { history.replaceState(null, '', '#'); showOverview(); return; }
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    if (!document.querySelector('.topic-btn.active')) return;   // only when a topic view is open
+    const cfg = [...LANGS, ...TECHS].find(l => l.key === currentLang);
+    if (!cfg) return;
+    const keys = cfg.topics.map(t => t[0]);
+    const i = keys.indexOf(currentTopic[currentLang]) + (e.key === 'ArrowRight' ? 1 : -1);
+    if (i >= 0 && i < keys.length) { activate(currentLang, keys[i]); e.preventDefault(); }
+  });
 
   // ── DEV CONSISTENCY CHECK ── silent when clean; warns on lang/section/nav mismatches
   function validateGuide() {

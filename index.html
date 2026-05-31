@@ -255,8 +255,8 @@
 
   /* ── CONCEPT CROSS-CUT VIEW ── */
   .concept-head { margin-bottom: 8px; }
-  .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; margin-top: 22px; }
-  .concept-card { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .concept-grid { columns: 22rem; column-gap: 16px; margin-top: 22px; }
+  .concept-card { display: flex; flex-direction: column; gap: 8px; break-inside: avoid; margin-bottom: 16px; }
   .concept-lang { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); display: flex; align-items: center; gap: 8px; }
   .concept-lang::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); flex-shrink: 0; }
 
@@ -265,13 +265,16 @@
   .cmp-vs { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
   .cmp-select { font-family: var(--mono); font-size: 12px; color: var(--text); background-color: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
   [data-skin="brutal"] .cmp-select { border-radius: 0; border-width: 1.5px; }
-  .compare-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
+  .compare-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; align-items: start; }
   .cmp-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
   @media (max-width: 640px) { .compare-cols { grid-template-columns: 1fr; } }
 
   /* ── BACK BUTTON + PROGRESS ── */
   .back-btn { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; color: var(--muted); background: none; border: none; cursor: pointer; padding: 4px 0; margin-bottom: 12px; display: block; }
   .back-btn:hover { color: var(--text); }
+  .reset-prog { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 6px; padding: 6px 11px; cursor: pointer; margin-top: 30px; }
+  .reset-prog:hover { color: var(--text); border-color: var(--muted); }
+  [data-skin="brutal"] .reset-prog { border-radius: 0; }
   .topic-btn.learned::before { content: '✓'; color: var(--green); font-weight: 700; margin-right: 5px; }
   .chip-prog { margin-left: 8px; font-size: 10px; color: var(--muted); opacity: 0.85; }
   .chip-prog.chip-done { color: var(--green); opacity: 1; }
@@ -332,9 +335,6 @@
 
   .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .divider { height: 1px; background: var(--border); margin: 48px 0; }
-  .full-pane { background: var(--code-bg); border-radius: 6px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 24px; }
-  .full-pane pre { padding: 20px; }
 
   /* ── THEME SWITCHER (dropdown) ── */
   .theme-switcher { display: flex; align-items: center; gap: 8px; margin-left: auto; }
@@ -580,6 +580,7 @@
       <button class="concept-chip" data-open="compare">⇄ Pick two languages</button>
     </div>
   </div>
+  <p><button class="reset-prog" id="reset-progress">↺ Reset learned progress</button></p>
 </section>
 
 <section class="section" id="concept-view" data-lang="concept"></section>
@@ -8936,6 +8937,11 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
     });
     history.replaceState(null, '', `#${lang}-${topic}`);
     updateLearnToggle(lang, topic);
+    window.scrollTo(0, 0);
+    const activeLang = document.querySelector('.lang-btn.active');
+    if (activeLang) activeLang.scrollIntoView({ block: 'nearest', inline: 'center' });
+    const activeTopic = document.querySelector('.topic-btn.active');
+    if (activeTopic) activeTopic.scrollIntoView({ block: 'nearest', inline: 'center' });
   }
 
   langBtns.forEach(btn => {
@@ -9143,6 +9149,13 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
   // Back button (concept / compare views) → overview
   document.addEventListener('click', e => {
     if (e.target.closest('.back-btn')) { history.replaceState(null, '', '#'); showOverview(); }
+  });
+
+  const resetBtn = document.getElementById('reset-progress');
+  if (resetBtn) resetBtn.addEventListener('click', () => {
+    if (learned.size && confirm('Clear all learned-topic progress?')) {
+      learned.clear(); saveLearned(); refreshLearnedMarks();
+    }
   });
 
   refreshLearnedMarks();

@@ -249,9 +249,16 @@
   .overview-lede { font-family: var(--prose); margin-top: 14px; color: var(--muted); font-size: 15px; line-height: 1.7; }
   .overview-group { margin-top: 30px; }
   .ov-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-  .ov-chip { --ink: var(--accent); font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; padding: 9px 15px; border-radius: 8px; background: none; color: var(--text); border: 1px solid color-mix(in srgb, var(--ink) 45%, var(--border)); transition: background .15s, border-color .15s, transform .15s; }
-  .ov-chip:hover { background: color-mix(in srgb, var(--ink) 16%, transparent); border-color: var(--ink); transform: translateY(-1px); }
-  [data-skin="brutal"] .ov-chip { border-radius: 0; border-width: 1.5px; }
+  .ov-chip, .concept-chip { --ink: var(--accent); font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; padding: 9px 15px; border-radius: 8px; background: none; color: var(--text); border: 1px solid color-mix(in srgb, var(--ink) 45%, var(--border)); transition: background .15s, border-color .15s, transform .15s; }
+  .ov-chip:hover, .concept-chip:hover { background: color-mix(in srgb, var(--ink) 16%, transparent); border-color: var(--ink); transform: translateY(-1px); }
+  [data-skin="brutal"] .ov-chip, [data-skin="brutal"] .concept-chip { border-radius: 0; border-width: 1.5px; }
+
+  /* ── CONCEPT CROSS-CUT VIEW ── */
+  .concept-head { margin-bottom: 8px; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; margin-top: 22px; }
+  .concept-card { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .concept-lang { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+  .concept-lang::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); flex-shrink: 0; }
   .section { display: none; } .section.active { display: block; }
 
   .section-intro { font-family: var(--mono); font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 40px; padding: 16px 20px; background: var(--nav-bg); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0; }
@@ -530,7 +537,24 @@
       <button class="ov-chip" data-lang="docker" style="--ink:var(--docker)">Docker</button>
     </div>
   </div>
+  <div class="overview-group">
+    <div class="section-label">Browse by concept — one idea, every language</div>
+    <div class="ov-chips">
+      <button class="concept-chip" data-concept="basics">Basics &amp; Syntax</button>
+      <button class="concept-chip" data-concept="types">Type System</button>
+      <button class="concept-chip" data-concept="functions">Functions</button>
+      <button class="concept-chip" data-concept="generics">Generics &amp; Polymorphism</button>
+      <button class="concept-chip" data-concept="errors">Error Handling</button>
+      <button class="concept-chip" data-concept="patterns">Pattern Matching &amp; ADTs</button>
+      <button class="concept-chip" data-concept="concurrency">Concurrency</button>
+      <button class="concept-chip" data-concept="structs">Structs &amp; Records</button>
+      <button class="concept-chip" data-concept="memory">Memory &amp; Pointers</button>
+      <button class="concept-chip" data-concept="collections">Collections</button>
+    </div>
+  </div>
 </section>
+
+<section class="section" id="concept-view" data-lang="concept"></section>
 
 <section class="section" id="go-basics" data-lang="go">
 <p class="section-intro">Go strips away most of what C# layers on top of a program. No namespaces on every file, no classes required, no semicolons. The mental model shift is: Go is closer to C with a GC, modern concurrency primitives, and strong opinions about simplicity.</p>
@@ -8905,11 +8929,66 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
     topicBtns.forEach(b => b.classList.remove('visible', 'active'));
   }
 
+  // ── CONCEPT CROSS-CUT ── transposes the EXISTING per-language panes by concept
+  const CONCEPTS = [
+    { key: 'basics',      label: 'Basics &amp; Syntax',         langs: { go:'basics', ada:'basics', sql:'basics', c:'basics', ocaml:'basics', fs:'basics', rust:'basics', zig:'basics', hs:'basics' } },
+    { key: 'types',       label: 'Type System',                 langs: { go:'types', ada:'types', c:'types', ocaml:'types', fs:'types', rust:'types', zig:'types', hs:'types' } },
+    { key: 'functions',   label: 'Functions',                   langs: { go:'functions', ada:'functions', c:'functions', ocaml:'functions', fs:'functions', hs:'functions' } },
+    { key: 'generics',    label: 'Generics &amp; Polymorphism', langs: { go:'generics', ada:'generics', rust:'generics', zig:'comptime', hs:'typeclasses' } },
+    { key: 'errors',      label: 'Error Handling',              langs: { go:'errors', ada:'exceptions', rust:'errors', zig:'errors', hs:'maybe' } },
+    { key: 'patterns',    label: 'Pattern Matching &amp; ADTs', langs: { ocaml:'pattern', fs:'pattern', rust:'enums', hs:'adts' } },
+    { key: 'concurrency', label: 'Concurrency',                 langs: { go:'concurrency', ada:'concurrency', rust:'concurrency', fs:'async' } },
+    { key: 'structs',     label: 'Structs &amp; Records',       langs: { go:'structs', c:'structs', ada:'records', zig:'structs' } },
+    { key: 'memory',      label: 'Memory &amp; Pointers',       langs: { c:'pointers', zig:'pointers', rust:'ownership' } },
+    { key: 'collections', label: 'Collections',                 langs: { go:'collections', ocaml:'collections', fs:'collections' } }
+  ];
+  const LANG_NAMES = { go:'Go', ada:'Ada', sql:'SQL', c:'C', ocaml:'OCaml', fs:'F#', rust:'Rust', zig:'Zig', hs:'Haskell' };
+  const conceptView = document.getElementById('concept-view');
+
+  function renderConcept(key) {
+    const c = CONCEPTS.find(x => x.key === key);
+    if (!c || !conceptView) return false;
+    let csPane = null;
+    const cards = [];
+    for (const lang in c.langs) {
+      const sec = document.getElementById(lang + '-' + c.langs[lang]);
+      if (!sec) continue;
+      if (!csPane) { const cs = sec.querySelector('.cs-pane'); if (cs) csPane = cs.outerHTML; }
+      const pane = sec.querySelector('.code-pane:not(.cs-pane)');
+      if (pane) cards.push('<div class="concept-card"><div class="concept-lang" style="--ink:var(--' + lang + ')">' + (LANG_NAMES[lang] || lang) + '</div>' + pane.outerHTML + '</div>');
+    }
+    if (!cards.length) return false;
+    let html = '<div class="concept-head"><div class="section-label">Concept · across languages</div>'
+      + '<h2 class="overview-title">' + c.label + '</h2>'
+      + '<p class="overview-lede">The same idea, side by side — C# as the baseline, then how each language expresses it.</p></div>'
+      + '<div class="concept-grid">';
+    if (csPane) html += '<div class="concept-card"><div class="concept-lang" style="--ink:var(--cs)">C# · baseline</div>' + csPane + '</div>';
+    html += cards.join('') + '</div>';
+    conceptView.innerHTML = html;
+    conceptView.querySelectorAll('.copy-btn').forEach(b => b.remove());  // cloned buttons are inert
+    return true;
+  }
+
+  function showConcept(key) {
+    if (!renderConcept(key)) { showOverview(); return false; }
+    sections.forEach(s => s.classList.toggle('active', s === conceptView));
+    langBtns.forEach(b => b.classList.remove('active'));
+    topicBtns.forEach(b => b.classList.remove('visible', 'active'));
+    window.scrollTo(0, 0);
+    history.replaceState(null, '', '#concept-' + key);
+    return true;
+  }
+
+  document.querySelectorAll('.concept-chip').forEach(chip => {
+    chip.addEventListener('click', () => showConcept(chip.dataset.concept));
+  });
+
   // ── DEEP LINKS ── URL hash <-> active section (bookmark / share / reload)
   function activateFromHash() {
     const id = decodeURIComponent(location.hash.slice(1));
+    if (id.indexOf('concept-') === 0 && showConcept(id.slice(8))) return;
     const sec = id ? document.getElementById(id) : null;
-    if (sec && sec.classList.contains('section') && sec.dataset.lang && sec.dataset.lang !== 'home') {
+    if (sec && sec.classList.contains('section') && sec.dataset.lang && sec.dataset.lang !== 'home' && sec.id !== 'concept-view') {
       const lang = sec.dataset.lang;
       activate(lang, id.substring(lang.length + 1));
     } else {

@@ -268,6 +268,18 @@
   .compare-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
   .cmp-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
   @media (max-width: 640px) { .compare-cols { grid-template-columns: 1fr; } }
+
+  /* ── BACK BUTTON + PROGRESS ── */
+  .back-btn { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; color: var(--muted); background: none; border: none; cursor: pointer; padding: 4px 0; margin-bottom: 12px; display: block; }
+  .back-btn:hover { color: var(--text); }
+  .topic-btn.learned::before { content: '✓'; color: var(--green); font-weight: 700; margin-right: 5px; }
+  .chip-prog { margin-left: 8px; font-size: 10px; color: var(--muted); opacity: 0.85; }
+  .chip-prog.chip-done { color: var(--green); opacity: 1; }
+  .learn-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 200; font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; padding: 9px 15px; border-radius: 999px; cursor: pointer; background: var(--surface); color: var(--muted); border: 1px solid var(--border); box-shadow: 0 8px 24px -10px rgba(0,0,0,.5); transition: color .15s, background .15s, border-color .15s; }
+  .learn-toggle:hover { color: var(--text); border-color: var(--muted); }
+  .learn-toggle.on { color: #0c0d12; background: var(--green); border-color: var(--green); }
+  [data-skin="brutal"] .learn-toggle { border-radius: 0; border-width: 2px; }
+  .learn-toggle[hidden] { display: none; }
   .section { display: none; } .section.active { display: block; }
 
   .section-intro { font-family: var(--mono); font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 40px; padding: 16px 20px; background: var(--nav-bg); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0; }
@@ -516,6 +528,7 @@
 </nav>
 
 <main>
+<button id="learn-toggle" class="learn-toggle" hidden>○ Mark learned</button>
 
 <section class="section active" id="home-overview" data-lang="home">
   <div class="overview-hero">
@@ -8919,6 +8932,7 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
       s.classList.toggle('active', s.id === `${lang}-${topic}`);
     });
     history.replaceState(null, '', `#${lang}-${topic}`);
+    updateLearnToggle(lang, topic);
   }
 
   langBtns.forEach(btn => {
@@ -8943,6 +8957,7 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
     sections.forEach(s => s.classList.toggle('active', s.id === 'home-overview'));
     langBtns.forEach(b => b.classList.remove('active'));
     topicBtns.forEach(b => b.classList.remove('visible', 'active'));
+    if (learnToggle) learnToggle.hidden = true;
   }
 
   // ── CONCEPT CROSS-CUT ── transposes the EXISTING per-language panes by concept
@@ -8974,7 +8989,7 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
       if (pane) cards.push('<div class="concept-card"><div class="concept-lang" style="--ink:var(--' + lang + ')">' + (LANG_NAMES[lang] || lang) + '</div>' + pane.outerHTML + '</div>');
     }
     if (!cards.length) return false;
-    let html = '<div class="concept-head"><div class="section-label">Concept · across languages</div>'
+    let html = '<div class="concept-head"><button class="back-btn" data-back>← Back to overview</button><div class="section-label">Concept · across languages</div>'
       + '<h2 class="overview-title">' + c.label + '</h2>'
       + '<p class="overview-lede">The same idea, side by side — C# as the baseline, then how each language expresses it.</p></div>'
       + '<div class="concept-grid">';
@@ -8991,6 +9006,7 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
     sections.forEach(s => s.classList.toggle('active', s === conceptView));
     langBtns.forEach(b => b.classList.remove('active'));
     topicBtns.forEach(b => b.classList.remove('visible', 'active'));
+    if (learnToggle) learnToggle.hidden = true;
     window.scrollTo(0, 0);
     history.replaceState(null, '', '#concept-' + key);
     return true;
@@ -9041,7 +9057,7 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
   function buildCompareBar() {
     if (cmpBuilt || !compareView) return;
     compareView.innerHTML =
-      '<div class="concept-head"><div class="section-label">Compare · any two languages</div>'
+      '<div class="concept-head"><button class="back-btn" data-back>← Back to overview</button><div class="section-label">Compare · any two languages</div>'
       + '<h2 class="overview-title">Side by side</h2></div>'
       + '<div class="cmp-bar"><select id="cmp-left" class="cmp-select"></select>'
       + '<span class="cmp-vs">vs</span><select id="cmp-right" class="cmp-select"></select>'
@@ -9071,11 +9087,59 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
     sections.forEach(s => s.classList.toggle('active', s === compareView));
     langBtns.forEach(b => b.classList.remove('active'));
     topicBtns.forEach(b => b.classList.remove('visible', 'active'));
+    if (learnToggle) learnToggle.hidden = true;
     window.scrollTo(0, 0);
     return true;
   }
   document.querySelectorAll('[data-open="compare"]').forEach(b =>
     b.addEventListener('click', () => showCompare('go', 'rust', 'basics')));
+
+  // ── PROGRESS TRACKING ── mark topics learned, per-language progress (localStorage)
+  let learned = new Set();
+  try { learned = new Set(JSON.parse(localStorage.getItem('devguide-learned') || '[]')); } catch (e) {}
+  const learnToggle = document.getElementById('learn-toggle');
+
+  function saveLearned() { try { localStorage.setItem('devguide-learned', JSON.stringify([...learned])); } catch (e) {} }
+
+  function refreshLearnedMarks() {
+    topicBtns.forEach(b => b.classList.toggle('learned', learned.has(b.dataset.lang + '-' + b.dataset.topic)));
+    document.querySelectorAll('.ov-chip[data-lang]').forEach(chip => {
+      const lang = chip.dataset.lang;
+      const topics = topicsFor(lang);
+      if (!topics.length) return;
+      const done = topics.filter(t => learned.has(lang + '-' + t.key)).length;
+      let badge = chip.querySelector('.chip-prog');
+      if (!badge) { badge = document.createElement('span'); badge.className = 'chip-prog'; chip.appendChild(badge); }
+      badge.textContent = done + '/' + topics.length;
+      badge.classList.toggle('chip-done', done === topics.length);
+    });
+  }
+
+  function updateLearnToggle(lang, topic) {
+    if (!learnToggle) return;
+    const id = lang + '-' + topic;
+    learnToggle.hidden = false;
+    learnToggle.dataset.id = id;
+    learnToggle.classList.toggle('on', learned.has(id));
+    learnToggle.textContent = learned.has(id) ? '✓ Learned' : '○ Mark learned';
+  }
+
+  if (learnToggle) learnToggle.addEventListener('click', () => {
+    const id = learnToggle.dataset.id;
+    if (!id) return;
+    if (learned.has(id)) learned.delete(id); else learned.add(id);
+    saveLearned();
+    learnToggle.classList.toggle('on', learned.has(id));
+    learnToggle.textContent = learned.has(id) ? '✓ Learned' : '○ Mark learned';
+    refreshLearnedMarks();
+  });
+
+  // Back button (concept / compare views) → overview
+  document.addEventListener('click', e => {
+    if (e.target.closest('.back-btn')) { history.replaceState(null, '', '#'); showOverview(); }
+  });
+
+  refreshLearnedMarks();
 
   // ── DEEP LINKS ── URL hash <-> active section (bookmark / share / reload)
   function activateFromHash() {

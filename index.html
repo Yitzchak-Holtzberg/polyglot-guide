@@ -8921,7 +8921,20 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
   const sections  = document.querySelectorAll('.section');
 
   let currentLang  = 'go';
-  let currentTopic = { go: "basics", ada: "basics", sql: "basics", c: "basics", ocaml: "basics", fs: "basics", rust: "basics", zig: "basics", hs: "basics", grpc: "basics", iac: "basics", k8s: "basics", docker: "basics" };
+  // ── SINGLE SOURCE OF TRUTH ── add a language/tech here; names, compare list, and
+  //    default topics all derive from it (CSS --ink + section markup are the only other touchpoints).
+  const LANGS = [
+    { key: 'go', name: 'Go' }, { key: 'ada', name: 'Ada' }, { key: 'sql', name: 'SQL' },
+    { key: 'c', name: 'C' }, { key: 'ocaml', name: 'OCaml' }, { key: 'fs', name: 'F#' },
+    { key: 'rust', name: 'Rust' }, { key: 'zig', name: 'Zig' }, { key: 'hs', name: 'Haskell' }
+  ];
+  const TECHS = [
+    { key: 'grpc', name: 'gRPC' }, { key: 'iac', name: 'IaC' },
+    { key: 'k8s', name: 'K8s' }, { key: 'docker', name: 'Docker' }
+  ];
+  const LANG_NAMES = Object.fromEntries(LANGS.map(l => [l.key, l.name]));
+  const CMP_LANGS = LANGS.map(l => l.key);
+  let currentTopic = Object.fromEntries([...LANGS, ...TECHS].map(l => [l.key, 'basics']));
 
   function activate(lang, topic) {
     currentLang = lang;
@@ -8982,7 +8995,7 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
     { key: 'memory',      label: 'Memory &amp; Pointers',       langs: { c:'pointers', zig:'pointers', rust:'ownership' } },
     { key: 'collections', label: 'Collections',                 langs: { go:'collections', ocaml:'collections', fs:'collections' } }
   ];
-  const LANG_NAMES = { go:'Go', ada:'Ada', sql:'SQL', c:'C', ocaml:'OCaml', fs:'F#', rust:'Rust', zig:'Zig', hs:'Haskell' };
+  // LANG_NAMES is derived from LANGS at the top of the script
   const conceptView = document.getElementById('concept-view');
 
   function renderConcept(key) {
@@ -9027,7 +9040,7 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
 
   // ── ANY-vs-ANY COMPARE ── pick two languages + a shared topic, harvested live
   const compareView = document.getElementById('compare-view');
-  const CMP_LANGS = ['go', 'ada', 'sql', 'c', 'ocaml', 'fs', 'rust', 'zig', 'hs'];
+  // CMP_LANGS is derived from LANGS at the top of the script
 
   function topicsFor(lang) {
     return [...document.querySelectorAll('.topic-btn[data-lang="' + lang + '"]')]

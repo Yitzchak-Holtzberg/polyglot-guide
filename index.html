@@ -259,6 +259,15 @@
   .concept-card { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
   .concept-lang { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); display: flex; align-items: center; gap: 8px; }
   .concept-lang::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); flex-shrink: 0; }
+
+  /* ── ANY-vs-ANY COMPARE ── */
+  .cmp-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 18px 0 4px; }
+  .cmp-vs { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .cmp-select { font-family: var(--mono); font-size: 12px; color: var(--text); background-color: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+  [data-skin="brutal"] .cmp-select { border-radius: 0; border-width: 1.5px; }
+  .compare-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
+  .cmp-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  @media (max-width: 640px) { .compare-cols { grid-template-columns: 1fr; } }
   .section { display: none; } .section.active { display: block; }
 
   .section-intro { font-family: var(--mono); font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 40px; padding: 16px 20px; background: var(--nav-bg); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0; }
@@ -552,9 +561,16 @@
       <button class="concept-chip" data-concept="collections">Collections</button>
     </div>
   </div>
+  <div class="overview-group">
+    <div class="section-label">Or compare any two</div>
+    <div class="ov-chips">
+      <button class="concept-chip" data-open="compare">⇄ Pick two languages</button>
+    </div>
+  </div>
 </section>
 
 <section class="section" id="concept-view" data-lang="concept"></section>
+<section class="section" id="compare-view" data-lang="compare"></section>
 
 <section class="section" id="go-basics" data-lang="go">
 <p class="section-intro">Go strips away most of what C# layers on top of a program. No namespaces on every file, no classes required, no semicolons. The mental model shift is: Go is closer to C with a GC, modern concurrency primitives, and strong opinions about simplicity.</p>
@@ -8965,7 +8981,8 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
     if (csPane) html += '<div class="concept-card"><div class="concept-lang" style="--ink:var(--cs)">C# · baseline</div>' + csPane + '</div>';
     html += cards.join('') + '</div>';
     conceptView.innerHTML = html;
-    conceptView.querySelectorAll('.copy-btn').forEach(b => b.remove());  // cloned buttons are inert
+    conceptView.querySelectorAll('.copy-btn').forEach(b => b.remove());  // drop inert clones
+    addCopyButtons(conceptView);                                          // add live ones
     return true;
   }
 
@@ -8983,12 +9000,90 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
     chip.addEventListener('click', () => showConcept(chip.dataset.concept));
   });
 
+  // ── ANY-vs-ANY COMPARE ── pick two languages + a shared topic, harvested live
+  const compareView = document.getElementById('compare-view');
+  const CMP_LANGS = ['go', 'ada', 'sql', 'c', 'ocaml', 'fs', 'rust', 'zig', 'hs'];
+
+  function topicsFor(lang) {
+    return [...document.querySelectorAll('.topic-btn[data-lang="' + lang + '"]')]
+      .map(b => ({ key: b.dataset.topic, label: b.textContent.trim() }));
+  }
+  function langOptions(selected) {
+    return CMP_LANGS.map(l => '<option value="' + l + '"' + (l === selected ? ' selected' : '') + '>' + LANG_NAMES[l] + '</option>').join('');
+  }
+  function rebuildTopicOptions(topicSel, a, b, want) {
+    const bKeys = new Set(topicsFor(b).map(t => t.key));
+    const shared = topicsFor(a).filter(t => bKeys.has(t.key));
+    topicSel.innerHTML = shared.map(t => '<option value="' + t.key + '">' + t.label + '</option>').join('');
+    if (shared.length) {
+      topicSel.value = shared.some(t => t.key === want) ? want
+                     : (shared.some(t => t.key === 'basics') ? 'basics' : shared[0].key);
+    }
+    return shared.length > 0;
+  }
+  function compareColumn(lang, topic) {
+    const sec = document.getElementById(lang + '-' + topic);
+    const panes = sec ? [...sec.querySelectorAll('.code-pane:not(.cs-pane)')].map(p => p.outerHTML).join('') : '';
+    return '<div class="cmp-col"><div class="concept-lang" style="--ink:var(--' + lang + ')">' + LANG_NAMES[lang] + '</div>'
+         + (panes || '<p class="overview-lede">No matching page for this topic.</p>') + '</div>';
+  }
+  function renderCompareResult() {
+    const L = document.getElementById('cmp-left').value;
+    const R = document.getElementById('cmp-right').value;
+    const T = document.getElementById('cmp-topic').value;
+    const res = document.getElementById('cmp-result');
+    res.innerHTML = '<div class="compare-cols">' + compareColumn(L, T) + compareColumn(R, T) + '</div>';
+    res.querySelectorAll('.copy-btn').forEach(b => b.remove());
+    addCopyButtons(res);
+    history.replaceState(null, '', '#compare-' + L + '-' + R + '-' + T);
+  }
+  let cmpBuilt = false;
+  function buildCompareBar() {
+    if (cmpBuilt || !compareView) return;
+    compareView.innerHTML =
+      '<div class="concept-head"><div class="section-label">Compare · any two languages</div>'
+      + '<h2 class="overview-title">Side by side</h2></div>'
+      + '<div class="cmp-bar"><select id="cmp-left" class="cmp-select"></select>'
+      + '<span class="cmp-vs">vs</span><select id="cmp-right" class="cmp-select"></select>'
+      + '<span class="cmp-vs">on</span><select id="cmp-topic" class="cmp-select"></select></div>'
+      + '<div id="cmp-result"></div>';
+    document.getElementById('cmp-left').innerHTML = langOptions('go');
+    document.getElementById('cmp-right').innerHTML = langOptions('rust');
+    const onLangChange = () => {
+      rebuildTopicOptions(document.getElementById('cmp-topic'),
+        document.getElementById('cmp-left').value, document.getElementById('cmp-right').value,
+        document.getElementById('cmp-topic').value);
+      renderCompareResult();
+    };
+    document.getElementById('cmp-left').addEventListener('change', onLangChange);
+    document.getElementById('cmp-right').addEventListener('change', onLangChange);
+    document.getElementById('cmp-topic').addEventListener('change', renderCompareResult);
+    cmpBuilt = true;
+  }
+  function showCompare(left, right, topic) {
+    if (!compareView) return false;
+    buildCompareBar();
+    const ls = document.getElementById('cmp-left'), rs = document.getElementById('cmp-right'), ts = document.getElementById('cmp-topic');
+    if (CMP_LANGS.includes(left)) ls.value = left;
+    if (CMP_LANGS.includes(right)) rs.value = right;
+    if (!rebuildTopicOptions(ts, ls.value, rs.value, topic)) return false;
+    renderCompareResult();
+    sections.forEach(s => s.classList.toggle('active', s === compareView));
+    langBtns.forEach(b => b.classList.remove('active'));
+    topicBtns.forEach(b => b.classList.remove('visible', 'active'));
+    window.scrollTo(0, 0);
+    return true;
+  }
+  document.querySelectorAll('[data-open="compare"]').forEach(b =>
+    b.addEventListener('click', () => showCompare('go', 'rust', 'basics')));
+
   // ── DEEP LINKS ── URL hash <-> active section (bookmark / share / reload)
   function activateFromHash() {
     const id = decodeURIComponent(location.hash.slice(1));
     if (id.indexOf('concept-') === 0 && showConcept(id.slice(8))) return;
+    if (id.indexOf('compare-') === 0) { const p = id.slice(8).split('-'); if (p.length === 3 && showCompare(p[0], p[1], p[2])) return; }
     const sec = id ? document.getElementById(id) : null;
-    if (sec && sec.classList.contains('section') && sec.dataset.lang && sec.dataset.lang !== 'home' && sec.id !== 'concept-view') {
+    if (sec && sec.classList.contains('section') && sec.dataset.lang && sec.dataset.lang !== 'home' && sec.id !== 'concept-view' && sec.id !== 'compare-view') {
       const lang = sec.dataset.lang;
       activate(lang, id.substring(lang.length + 1));
     } else {
@@ -9051,22 +9146,26 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
     });
   }
 
-  document.querySelectorAll('.code-pane').forEach(pane => {
-    const header = pane.querySelector('.code-pane-header');
-    const pre = pane.querySelector('pre');
-    if (!header || !pre) return;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'copy-btn';
-    btn.textContent = 'Copy';
-    btn.addEventListener('click', () => {
-      copyText(pre.innerText)
-        .then(() => { btn.textContent = 'Copied'; btn.classList.add('copied'); })
-        .catch(() => { btn.textContent = 'Failed'; });
-      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1400);
+  function addCopyButtons(scope) {
+    scope.querySelectorAll('.code-pane').forEach(pane => {
+      if (pane.querySelector('.copy-btn')) return;   // don't double-add
+      const header = pane.querySelector('.code-pane-header');
+      const pre = pane.querySelector('pre');
+      if (!header || !pre) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'copy-btn';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', () => {
+        copyText(pre.innerText)
+          .then(() => { btn.textContent = 'Copied'; btn.classList.add('copied'); })
+          .catch(() => { btn.textContent = 'Failed'; });
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1400);
+      });
+      header.appendChild(btn);
     });
-    header.appendChild(btn);
-  });
+  }
+  addCopyButtons(document);
 </script>
 </body>
 </html>

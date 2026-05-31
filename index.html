@@ -1422,7 +1422,7 @@ arr := [<span class="nu">3</span>]<span class="ty">int</span>{<span class="nu">1
 <span class="cm">// Slice — use this for everything</span>
 s := []<span class="ty">int</span>{<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>}
 s = <span class="fn">append</span>(s, <span class="nu">4</span>)          <span class="cm">// add to end</span>
-s = <span class="fn">append</span>(s[<span class="nu">1</span>:], s[<span class="nu">2</span>:]...) <span class="cm">// delete index 0 (tricky!)</span>
+s = <span class="fn">append</span>(s[:<span class="nu">1</span>], s[<span class="nu">2</span>:]...) <span class="cm">// delete index 1 (general idiom)</span>
 
 <span class="cm">// Sub-slice (shares underlying array!)</span>
 sub := s[<span class="nu">1</span>:<span class="nu">3</span>]              <span class="cm">// [2, 3] — not a copy</span>
@@ -2273,9 +2273,9 @@ W.<span class="fn">Start</span>;       <span class="cm">-- rendezvous: both side
 <span class="kw">function</span> <span class="fn">Divide</span> (A, B : <span class="ty">Integer</span>) <span class="kw">return</span> <span class="ty">Integer</span>
    <span class="kw">with</span>
       Pre  => B /= <span class="nu">0</span>,                   <span class="cm">-- precondition</span>
-      Post => <span class="fn">Divide</span>'Result * B = A;    <span class="cm">-- postcondition
+      Post => <span class="fn">Divide</span>'Result * B = A;    <span class="cm">-- postcondition</span>
 
-</span><span class="cm">-- Type invariants on records</span>
+<span class="cm">-- Type invariants on records</span>
 <span class="kw">type</span> <span class="ty">Safe_Stack</span> <span class="kw">is private</span>
    <span class="kw">with</span> Type_Invariant => <span class="fn">Is_Valid</span> (<span class="ty">Safe_Stack</span>);
 
@@ -2770,7 +2770,7 @@ listA.FullOuterJoin(listB, ...);  <span class="cm">// MoreLINQ</span>
 </section>
 
 <section class="section" id="sql-aggregates" data-lang="sql">
-<p class="section-intro">Aggregate functions collapse multiple rows into a single value. The key rule: once you GROUP BY, every column in SELECT must either be in GROUP BY or inside an aggregate function. Violating this is a compile error in standard SQL (though MySQL silently allows it with wrong results).</p>
+<p class="section-intro">Aggregate functions collapse multiple rows into a single value. The key rule: once you GROUP BY, every column in SELECT must either be in GROUP BY or inside an aggregate function. Violating this is an error in standard SQL (older MySQL allowed it with arbitrary results; MySQL 8's default <code>ONLY_FULL_GROUP_BY</code> now rejects it too).</p>
 
   <div class="compare">
     <div class="compare-header"><span class="compare-title">Aggregate Functions</span></div>
@@ -2979,7 +2979,7 @@ orders.OrderBy(o => o.Date)
 <span class="kw">FROM</span> stock_prices;</code></pre>
       </div>
     </div>
-    <div class="callout warn"><strong>LAST_VALUE frame</strong>LAST_VALUE requires an explicit frame clause to work as expected. Without <code>ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING</code>, the default frame is <code>RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW</code> — meaning LAST_VALUE gives you the current row's value, not the last in the partition. Always specify the frame.</div>
+    <div class="callout warn"><strong>LAST_VALUE frame</strong>LAST_VALUE requires an explicit frame clause to work as expected. Without <code>ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING</code> (and given the window has an <code>ORDER BY</code>), the default frame is <code>RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW</code> — meaning LAST_VALUE gives you the current row's value, not the last in the partition. Always specify the frame.</div>
   </div>
 
   <div class="compare">
@@ -4084,7 +4084,7 @@ p = <span class="kw">NULL</span>;                          <span class="cm">/* a
 <span class="fn">strcpy</span>(dst, <span class="st">"hello"</span>);        <span class="cm">/* UNSAFE — no bounds check */</span>
 <span class="fn">strcat</span>(dst, <span class="st">" world"</span>);       <span class="cm">/* UNSAFE */</span>
 
-<span class="cm">/* Safe versions (check bounds) */</span>
+<span class="cm">/* Bounded — but YOU must size the buffer &amp; null-terminate */</span>
 <span class="fn">strncpy</span>(dst, s, <span class="kw">sizeof</span>(dst) - <span class="nu">1</span>);
 dst[<span class="kw">sizeof</span>(dst)-<span class="nu">1</span>] = <span class="st">'\0'</span>;   <span class="cm">/* strncpy doesn't guarantee null-term! */</span>
 
@@ -4642,7 +4642,7 @@ r := <span class="nu">10</span>           <span class="cm">(* assign with := *)<
 <span class="kw">done</span>
 
 <span class="cm">(* while loop *)</span>
-<span class="kw">while</span> !flag <span class="kw">do</span>
+<span class="kw">while</span> <span class="kw">not</span> finished <span class="kw">do</span>
   <span class="cm">(* body *)</span>
 <span class="kw">done</span></code></pre>
       </div>
@@ -4662,7 +4662,7 @@ r := <span class="nu">10</span>           <span class="cm">(* assign with := *)<
       <tr><td>float</td><td>double, float</td><td>float (always 64-bit IEEE 754)</td></tr>
       <tr><td>bool</td><td>bool (true/false)</td><td>bool (true/false)</td></tr>
       <tr><td>character</td><td>char (16-bit)</td><td>char (8-bit ASCII)</td></tr>
-      <tr><td>string</td><td>string (immutable)</td><td>string (immutable, UTF-8 aware via Uutf)</td></tr>
+      <tr><td>string</td><td>string (immutable)</td><td>string (immutable bytes; not Unicode-aware)</td></tr>
       <tr><td>unit/void</td><td>void (not a type)</td><td>unit (is a type, has one value: ())</td></tr>
       <tr><td>tuple</td><td>(int, string) via ValueTuple</td><td>(int * string) — built into the language</td></tr>
       <tr><td>option/nullable</td><td>T? / Nullable&lt;T&gt;</td><td>'a option — Some x | None</td></tr>
@@ -4872,7 +4872,7 @@ c.count <- c.count + <span class="nu">1</span>      <span class="cm">(* <- for m
 <span class="kw">and</span>     <span class="fn">is_odd</span>  n = <span class="kw">if</span> n = <span class="nu">0</span> <span class="kw">then</span> <span class="kw">false</span> <span class="kw">else</span> <span class="fn">is_even</span> (n - <span class="nu">1</span>)</code></pre>
       </div>
     </div>
-    <div class="callout warn"><strong>rec is mandatory</strong>Without <code>let rec</code>, a function body cannot refer to the function being defined. This is not a quirk — it's intentional: it prevents accidental recursion and makes the dependency structure explicit. OCaml guarantees tail-call optimization for tail-recursive functions.</div>
+    <div class="callout warn"><strong>rec is mandatory</strong>Without <code>let rec</code>, a function body cannot refer to the function being defined. This is not a quirk — it's intentional: it prevents accidental recursion and makes the dependency structure explicit. OCaml reliably optimizes tail calls, so tail-recursive functions run in constant stack space.</div>
   </div>
 
   <div class="compare">
@@ -5088,22 +5088,24 @@ c.count <- c.count + <span class="nu">1</span>      <span class="cm">(* <- for m
         <pre><code><span class="cm">(* Module signature (interface — .mli file or inline) *)</span>
 <span class="kw">module type</span> <span class="ty">SHAPE</span> = <span class="kw">sig</span>
   <span class="kw">type</span> <span class="ty">t</span>
+  <span class="kw">val</span> <span class="fn">make</span> : <span class="ty">float</span> -> <span class="ty">t</span>
   <span class="kw">val</span> <span class="fn">area</span> : <span class="ty">t</span> -> <span class="ty">float</span>
 <span class="kw">end</span>
 
 <span class="cm">(* Module implementation *)</span>
 <span class="kw">module</span> <span class="ty">Circle</span> : <span class="ty">SHAPE</span> = <span class="kw">struct</span>
   <span class="kw">type</span> <span class="ty">t</span> = { radius : <span class="ty">float</span> }
+  <span class="kw">let</span> <span class="fn">make</span> r = { radius = r }
   <span class="kw">let</span> <span class="fn">area</span> c = <span class="ty">Float</span>.pi *. c.radius *. c.radius
 <span class="kw">end</span>
 
-<span class="cm">(* Usage *)</span>
-<span class="kw">let</span> c = <span class="ty">Circle</span>.{ radius = <span class="nu">5.0</span> }
+<span class="cm">(* Usage — t is abstract, so build via make, not the raw record *)</span>
+<span class="kw">let</span> c = <span class="ty">Circle</span>.<span class="fn">make</span> <span class="nu">5.0</span>
 <span class="kw">let</span> a = <span class="ty">Circle</span>.area c
 
 <span class="cm">(* open — like C# using *)</span>
 <span class="kw">open</span> <span class="ty">Circle</span>
-<span class="kw">let</span> a = <span class="fn">area</span> { radius = <span class="nu">5.0</span> }</code></pre>
+<span class="kw">let</span> a2 = <span class="fn">area</span> (<span class="fn">make</span> <span class="nu">5.0</span>)</code></pre>
       </div>
     </div>
   </div>
@@ -5529,7 +5531,7 @@ y <- <span class="nu">10</span>             <span class="cm">// <- is mutation o
     <span class="fn">printfn</span> <span class="st">"%A"</span> item
 
 <span class="cm">// while</span>
-<span class="kw">while</span> !flag <span class="kw">do</span>
+<span class="kw">while</span> <span class="kw">not</span> finished <span class="kw">do</span>
     doWork ()
 
 <span class="cm">// Functional preferred — use List.iter/map/filter instead of loops</span></code></pre>
@@ -7302,9 +7304,10 @@ thread::<span class="fn">spawn</span>(<span class="kw">move</span> || { tx2.<spa
     std.debug.<span class="fn">print</span>(<span class="st">"Hello, world!\n"</span>, .{});
 
     <span class="kw">var</span> x: <span class="ty">i32</span> = <span class="nu">10</span>;      <span class="cm">// mutable — needs var</span>
+    x += <span class="nu">1</span>;               <span class="cm">// reassign — that's why it's var</span>
     <span class="kw">const</span> max: <span class="ty">i32</span> = <span class="nu">100</span>; <span class="cm">// immutable (the default)</span>
     <span class="kw">const</span> name = <span class="st">"Zig"</span>;   <span class="cm">// type inferred</span>
-    _ = x;                <span class="cm">// discard — unused is an error</span>
+    _ = x; _ = max; _ = name; <span class="cm">// silence "unused" (it's an error)</span>
 }</code></pre>
       </div>
     </div>
@@ -7500,7 +7503,7 @@ p.* += <span class="nu">1</span>;             <span class="cm">// n == 6</span>
     }
 };
 
-<span class="kw">var</span> p = <span class="ty">Point</span>{ .x = <span class="nu">3</span>, .y = <span class="nu">4</span> };
+<span class="kw">const</span> p = <span class="ty">Point</span>{ .x = <span class="nu">3</span>, .y = <span class="nu">4</span> };
 <span class="kw">const</span> d = p.<span class="fn">dist</span>();   <span class="cm">// 5 — sugar for Point.dist(p)</span></code></pre>
       </div>
     </div>
@@ -7541,7 +7544,7 @@ p.* += <span class="nu">1</span>;             <span class="cm">// n == 6</span>
 }
 
 <span class="kw">const</span> m = <span class="fn">max</span>(<span class="ty">i32</span>, <span class="nu">3</span>, <span class="nu">9</span>);        <span class="cm">// 9</span>
-<span class="kw">var</span> b = <span class="fn">Box</span>(<span class="ty">i32</span>){ .value = <span class="nu">42</span> };</code></pre>
+<span class="kw">const</span> b = <span class="fn">Box</span>(<span class="ty">i32</span>){ .value = <span class="nu">42</span> };</code></pre>
       </div>
     </div>
     <div class="callout diff"><strong>Generics = comptime type params</strong><code>type</code> is a real type whose values <em>are</em> types, resolved at compile time. <code>Box(i32)</code> actually runs during compilation and hands back a fresh struct type. <code>std.ArrayList(T)</code>, <code>HashMap</code>, all of it — just functions like this.</div>
@@ -8196,7 +8199,7 @@ http.DefaultRequestHeaders.<span class="fn">Add</span>(
         <pre><code><span class="cm"># main.tf — declare the provider, then resources</span>
 <span class="kw">terraform</span> {
   <span class="kw">required_providers</span> {
-    azurerm = { source = <span class="st">"hashicorp/azurerm"</span>, version = <span class="st">"~&gt; 3.0"</span> }
+    azurerm = { source = <span class="st">"hashicorp/azurerm"</span>, version = <span class="st">"~&gt; 4.0"</span> }
   }
 }
 <span class="kw">provider</span> <span class="st">"azurerm"</span> { features {} }
@@ -8571,7 +8574,7 @@ terraform apply     <span class="cm"># converges, updates state</span>
             - containerPort: <span class="nu">8080</span></code></pre>
       </div>
     </div>
-    <div class="callout diff"><strong>selector + template is the core idea</strong>The Deployment's <code>selector.matchLabels</code> must match the Pod <code>template</code>'s labels — that's the contract telling the Deployment "these Pods are mine." Change the image and <code>kubectl apply</code>; it performs a rolling update (new Pods up, old Pods drained) and rolls back automatically if the new ones fail their readiness checks.</div>
+    <div class="callout diff"><strong>selector + template is the core idea</strong>The Deployment's <code>selector.matchLabels</code> must match the Pod <code>template</code>'s labels — that's the contract telling the Deployment "these Pods are mine." Change the image and <code>kubectl apply</code>; it performs a rolling update (new Pods up, old Pods drained). If the new Pods fail their readiness checks the rollout <em>halts</em> (old Pods keep serving, eventually <code>ProgressDeadlineExceeded</code>) — you revert with <code>kubectl rollout undo</code>.</div>
   </div>
   <div class="callout info"><strong>Deployment → ReplicaSet → Pods</strong>A Deployment manages a ReplicaSet (which enforces the count), which manages the Pods. You interact with the Deployment; the layers beneath are how rollouts keep two versions side-by-side mid-deploy. <code>kubectl rollout status/undo deployment/api</code> drives it.</div>
 </section>
@@ -8774,7 +8777,7 @@ docker stop api &amp;&amp; docker rm api</code></pre>
 <span class="kw">ENTRYPOINT</span> [<span class="st">"dotnet"</span>, <span class="st">"MyApi.dll"</span>]</code></pre>
       </div>
     </div>
-    <div class="callout diff"><strong>Order instructions by how often they change</strong>Each instruction is a cached layer; a layer rebuilds only if it or something above it changed. Copying <code>*.csproj</code> and restoring <em>before</em> copying source means a code change doesn't re-download NuGet packages — the restore layer stays cached. Put the volatile stuff (your source) last.</div>
+    <div class="callout diff"><strong>Order instructions by how often they change</strong>Each instruction is a cached layer; a layer rebuilds only if it or something above it changed. Copying <code>*.csproj</code> and restoring <em>before</em> copying source means a code change doesn't re-download NuGet packages — the restore layer stays cached. Put the volatile stuff (your source) last. (Shown for a single-project layout; a multi-project solution copies each project's <code>.csproj</code> — preserving paths — before <code>restore</code>.)</div>
   </div>
   <div class="callout warn"><strong>Multi-stage = small, safe images</strong>The final image is built <code>FROM</code> the runtime image and only <code>COPY --from=build</code> brings over the published output — the SDK, your source, and build tools never ship. Smaller attack surface, faster pulls. Add a <code>.dockerignore</code> (bin/, obj/, .git/) so the build context stays lean.</div>
 </section>

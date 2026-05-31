@@ -655,20 +655,43 @@ a, b, c := <span class="nu">1</span>, <span class="nu">2</span>, <span class="nu
     <div class="compare-grid">
       <div class="code-pane cs-pane">
         <div class="code-pane-header"><span class="lang-dot"></span><span class="lang-label">C#</span></div>
-        <pre><code><span class="cm">// if</span>
-<span class="kw">if</span> (x > <span class="nu">0</span>) { ... }
-<span class="kw">else if</span> (x < <span class="nu">0</span>) { ... }
-<span class="kw">else</span> { ... }
+        <pre><code><span class="cm">// if / else if / else</span>
+<span class="kw">if</span> (x > <span class="nu">0</span>)
+{
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(<span class="st">"positive"</span>);
+}
+<span class="kw">else if</span> (x < <span class="nu">0</span>)
+{
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(<span class="st">"negative"</span>);
+}
+<span class="kw">else</span>
+{
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(<span class="st">"zero"</span>);
+}
 
-<span class="cm">// for</span>
-<span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i < <span class="nu">10</span>; i++) { ... }
-<span class="kw">foreach</span> (<span class="kw">var</span> item <span class="kw">in</span> list) { ... }
-<span class="kw">while</span> (condition) { ... }
+<span class="cm">// for / foreach / while</span>
+<span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i < <span class="nu">10</span>; i++)
+{
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(i);
+}
+<span class="kw">foreach</span> (<span class="kw">var</span> item <span class="kw">in</span> list)
+{
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(item);
+}
+<span class="kw">while</span> (condition)
+{
+    <span class="fn">DoWork</span>();
+}
 
 <span class="cm">// switch</span>
-<span class="kw">switch</span> (x) {
-    <span class="kw">case</span> <span class="nu">1</span>: ...; <span class="kw">break</span>;
-    <span class="kw">default</span>: ...; <span class="kw">break</span>;
+<span class="kw">switch</span> (x)
+{
+    <span class="kw">case</span> <span class="nu">1</span>:
+        <span class="fn">HandleOne</span>();
+        <span class="kw">break</span>;
+    <span class="kw">default</span>:
+        <span class="fn">HandleRest</span>();
+        <span class="kw">break</span>;
 }</code></pre>
       </div>
       <div class="code-pane go-pane">
@@ -1570,20 +1593,43 @@ Z : <span class="ty">Integer</span>;  <span class="cm">-- undefined value (not z
     <div class="compare-grid">
       <div class="code-pane cs-pane">
         <div class="code-pane-header"><span class="lang-dot"></span><span class="lang-label">C#</span></div>
-        <pre><code><span class="cm">// if</span>
-<span class="kw">if</span> (x > <span class="nu">0</span>) { ... }
-<span class="kw">else if</span> (x < <span class="nu">0</span>) { ... }
-<span class="kw">else</span> { ... }
+        <pre><code><span class="cm">// if / else if / else</span>
+<span class="kw">if</span> (x > <span class="nu">0</span>)
+{
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(<span class="st">"positive"</span>);
+}
+<span class="kw">else if</span> (x < <span class="nu">0</span>)
+{
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(<span class="st">"negative"</span>);
+}
+<span class="kw">else</span>
+{
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(<span class="st">"zero"</span>);
+}
 
-<span class="cm">// for</span>
-<span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i < <span class="nu">10</span>; i++) { ... }
-<span class="kw">foreach</span> (<span class="kw">var</span> item <span class="kw">in</span> list) { ... }
-<span class="kw">while</span> (condition) { ... }
+<span class="cm">// for / foreach / while</span>
+<span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i < <span class="nu">10</span>; i++)
+{
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(i);
+}
+<span class="kw">foreach</span> (<span class="kw">var</span> item <span class="kw">in</span> list)
+{
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(item);
+}
+<span class="kw">while</span> (condition)
+{
+    <span class="fn">DoWork</span>();
+}
 
 <span class="cm">// switch</span>
-<span class="kw">switch</span> (x) {
-    <span class="kw">case</span> <span class="nu">1</span>: ...; <span class="kw">break</span>;
-    <span class="kw">default</span>: ...; <span class="kw">break</span>;
+<span class="kw">switch</span> (x)
+{
+    <span class="kw">case</span> <span class="nu">1</span>:
+        <span class="fn">HandleOne</span>();
+        <span class="kw">break</span>;
+    <span class="kw">default</span>:
+        <span class="fn">HandleRest</span>();
+        <span class="kw">break</span>;
 }</code></pre>
       </div>
       <div class="code-pane ada-pane">
@@ -3581,13 +3627,50 @@ modelBuilder.Entity&lt;<span class="ty">Order</span>&gt;()
     <div class="compare-grid">
       <div class="code-pane cs-pane">
         <div class="code-pane-header"><span class="lang-dot"></span><span class="lang-label">C#</span></div>
-        <pre><code><span class="kw">if</span> (x > <span class="nu">0</span>) { ... } <span class="kw">else if</span> (x < <span class="nu">0</span>) { ... } <span class="kw">else</span> { ... }
-<span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i < n; i++) { ... }
-<span class="kw">while</span> (cond) { ... }
-<span class="kw">do</span> { ... } <span class="kw">while</span> (cond);
-<span class="kw">switch</span> (x) { <span class="kw">case</span> <span class="nu">1</span>: ...; <span class="kw">break</span>; <span class="kw">default</span>: ...; <span class="kw">break</span>; }
-<span class="kw">foreach</span> (<span class="kw">var</span> item <span class="kw">in</span> collection) { ... }
-<span class="kw">break</span>;  <span class="kw">continue</span>;  <span class="kw">return</span> val;</code></pre>
+        <pre><code><span class="cm">// if / else if / else</span>
+<span class="kw">if</span> (x > <span class="nu">0</span>)
+{
+    <span class="fn">Positive</span>();
+}
+<span class="kw">else if</span> (x < <span class="nu">0</span>)
+{
+    <span class="fn">Negative</span>();
+}
+<span class="kw">else</span>
+{
+    <span class="fn">Zero</span>();
+}
+
+<span class="cm">// for / while / do-while</span>
+<span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i < n; i++)
+{
+    <span class="fn">Process</span>(i);
+}
+<span class="kw">while</span> (cond)
+{
+    <span class="fn">Step</span>();
+}
+<span class="kw">do</span>
+{
+    <span class="fn">Step</span>();
+}
+<span class="kw">while</span> (cond);
+
+<span class="kw">foreach</span> (<span class="kw">var</span> item <span class="kw">in</span> collection)
+{
+    <span class="fn">Use</span>(item);
+}
+
+<span class="cm">// switch</span>
+<span class="kw">switch</span> (x)
+{
+    <span class="kw">case</span> <span class="nu">1</span>:
+        <span class="fn">HandleOne</span>();
+        <span class="kw">break</span>;
+    <span class="kw">default</span>:
+        <span class="fn">HandleRest</span>();
+        <span class="kw">break</span>;
+}</code></pre>
       </div>
       <div class="code-pane c-pane">
         <div class="code-pane-header"><span class="lang-dot"></span><span class="lang-label">C</span></div>
@@ -6252,10 +6335,31 @@ y = <span class="nu">10</span>;              <span class="cm">// fine</span>
     <div class="compare-grid">
       <div class="code-pane cs-pane">
         <div class="code-pane-header"><span class="lang-dot"></span><span class="lang-label">C#</span></div>
-        <pre><code><span class="kw">if</span> (x > <span class="nu">0</span>) { ... } <span class="kw">else</span> { ... }
-<span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i < <span class="nu">10</span>; i++) { ... }
-<span class="kw">foreach</span> (<span class="kw">var</span> item <span class="kw">in</span> items) { ... }
-<span class="kw">while</span> (cond) { ... }
+        <pre><code><span class="cm">// if / else</span>
+<span class="kw">if</span> (x > <span class="nu">0</span>)
+{
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(<span class="st">"pos"</span>);
+}
+<span class="kw">else</span>
+{
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(<span class="st">"neg"</span>);
+}
+
+<span class="cm">// for / foreach / while</span>
+<span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i < <span class="nu">10</span>; i++)
+{
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(i);
+}
+<span class="kw">foreach</span> (<span class="kw">var</span> item <span class="kw">in</span> items)
+{
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(item);
+}
+<span class="kw">while</span> (cond)
+{
+    <span class="fn">DoWork</span>();
+}
+
+<span class="cm">// ternary expression</span>
 <span class="kw">var</span> v = x > <span class="nu">0</span> ? <span class="st">"pos"</span> : <span class="st">"neg"</span>;</code></pre>
       </div>
       <div class="code-pane rust-pane">

@@ -345,6 +345,20 @@
   .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
+  /* ── DIAGRAMS (inline SVG, theme-aware) ── */
+  .diagram { margin: 18px 0 8px; max-width: 720px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px 18px; overflow-x: auto; }
+  .diagram .caption { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .diagram svg { display: block; width: 100%; height: auto; }
+  .diagram .box { fill: var(--surface); stroke: var(--border); stroke-width: 1.5; }
+  .diagram .box.accent { stroke: var(--accent); stroke-width: 2; }
+  .diagram .lbl { fill: var(--text); font-family: var(--mono); font-size: 13px; font-weight: 600; }
+  .diagram .rowlbl { fill: var(--text); font-family: var(--mono); font-size: 11px; font-weight: 600; }
+  .diagram .sub { fill: var(--muted); font-family: var(--mono); font-size: 10px; }
+  .diagram .ln { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+  .diagram .ln.dash { stroke-dasharray: 4 3; }
+  .diagram .ln.accent { stroke: var(--accent); stroke-width: 2; }
+  [data-skin="brutal"] .diagram { border-radius: 0; }
+
   /* ── THEME SWITCHER (dropdown) ── */
   .theme-switcher { display: flex; align-items: center; gap: 8px; margin-left: auto; }
   .theme-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }

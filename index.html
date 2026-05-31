@@ -7496,6 +7496,32 @@ getTotal = <span class="kw">do</span>
 
 <section class="section" id="grpc-rpctypes" data-lang="grpc">
 <p class="section-intro">gRPC has four method shapes, and there's only one knob to set them: the <code>stream</code> keyword, on the request side, the response side, both, or neither.</p>
+<div class="diagram">
+  <div class="caption">The four shapes — set by where stream goes (n = a stream)</div>
+  <svg viewBox="0 0 540 292" role="img" aria-label="Four gRPC RPC types: unary, server streaming, client streaming, bidirectional">
+    <defs><marker id="ah-grpc" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="context-stroke"/></marker></defs>
+    <text class="rowlbl" x="6" y="44">Unary</text>
+    <rect class="box" x="120" y="20" width="64" height="40" rx="5"/><text class="sub" x="152" y="44" text-anchor="middle">Client</text>
+    <rect class="box" x="400" y="20" width="64" height="40" rx="5"/><text class="sub" x="432" y="44" text-anchor="middle">Server</text>
+    <line class="ln" x1="188" y1="32" x2="396" y2="32" marker-end="url(#ah-grpc)"/><text class="sub" x="292" y="28" text-anchor="middle">request · 1</text>
+    <line class="ln" x1="396" y1="48" x2="188" y2="48" marker-end="url(#ah-grpc)"/><text class="sub" x="292" y="60" text-anchor="middle">response · 1</text>
+    <text class="rowlbl" x="6" y="114">Server stream</text>
+    <rect class="box" x="120" y="90" width="64" height="40" rx="5"/><text class="sub" x="152" y="114" text-anchor="middle">Client</text>
+    <rect class="box" x="400" y="90" width="64" height="40" rx="5"/><text class="sub" x="432" y="114" text-anchor="middle">Server</text>
+    <line class="ln" x1="188" y1="102" x2="396" y2="102" marker-end="url(#ah-grpc)"/><text class="sub" x="292" y="98" text-anchor="middle">request · 1</text>
+    <line class="ln accent" x1="396" y1="118" x2="188" y2="118" marker-end="url(#ah-grpc)"/><text class="sub" x="292" y="130" text-anchor="middle">responses · n</text>
+    <text class="rowlbl" x="6" y="184">Client stream</text>
+    <rect class="box" x="120" y="160" width="64" height="40" rx="5"/><text class="sub" x="152" y="184" text-anchor="middle">Client</text>
+    <rect class="box" x="400" y="160" width="64" height="40" rx="5"/><text class="sub" x="432" y="184" text-anchor="middle">Server</text>
+    <line class="ln accent" x1="188" y1="172" x2="396" y2="172" marker-end="url(#ah-grpc)"/><text class="sub" x="292" y="168" text-anchor="middle">requests · n</text>
+    <line class="ln" x1="396" y1="188" x2="188" y2="188" marker-end="url(#ah-grpc)"/><text class="sub" x="292" y="200" text-anchor="middle">response · 1</text>
+    <text class="rowlbl" x="6" y="254">Bidirectional</text>
+    <rect class="box" x="120" y="230" width="64" height="40" rx="5"/><text class="sub" x="152" y="254" text-anchor="middle">Client</text>
+    <rect class="box" x="400" y="230" width="64" height="40" rx="5"/><text class="sub" x="432" y="254" text-anchor="middle">Server</text>
+    <line class="ln accent" x1="188" y1="242" x2="396" y2="242" marker-end="url(#ah-grpc)"/><text class="sub" x="292" y="238" text-anchor="middle">requests · n</text>
+    <line class="ln accent" x1="396" y1="258" x2="188" y2="258" marker-end="url(#ah-grpc)"/><text class="sub" x="292" y="270" text-anchor="middle">responses · n</text>
+  </svg>
+</div>
   <div class="compare">
     <div class="compare-header"><span class="compare-title">The four RPC types</span></div>
     <div class="compare-grid">
@@ -8061,7 +8087,25 @@ terraform apply     <span class="cm"># converges, updates state</span>
 </section>
 
 <section class="section" id="k8s-deployments" data-lang="k8s">
-<p class="section-intro">The Deployment is what you actually write for a stateless service. It owns a desired replica count, recreates Pods that die, and rolls out new image versions gradually with automatic rollback on failure — the self-healing that makes Kubernetes worth the YAML.</p>
+<p class="section-intro">The Deployment is what you actually write for a stateless service. It owns a desired replica count, recreates Pods that die, and rolls out new image versions gradually (halting if the new Pods fail their checks) — the self-healing that makes Kubernetes worth the YAML.</p>
+<div class="diagram">
+  <div class="caption">Who owns what — the controller chain</div>
+  <svg viewBox="0 0 600 210" role="img" aria-label="A Deployment manages a ReplicaSet, which creates Pods; a Service selects those Pods by label">
+    <defs><marker id="ah-k8s" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="context-stroke"/></marker></defs>
+    <rect class="box accent" x="10" y="22" width="150" height="56" rx="6"/>
+    <text class="lbl" x="28" y="46">Deployment</text><text class="sub" x="28" y="66">replicas: 3</text>
+    <line class="ln" x1="160" y1="50" x2="204" y2="50" marker-end="url(#ah-k8s)"/>
+    <rect class="box" x="210" y="22" width="150" height="56" rx="6"/>
+    <text class="lbl" x="228" y="46">ReplicaSet</text><text class="sub" x="228" y="66">keeps the count</text>
+    <line class="ln" x1="360" y1="50" x2="404" y2="50" marker-end="url(#ah-k8s)"/>
+    <rect class="box" x="410" y="22" width="150" height="56" rx="6"/>
+    <text class="lbl" x="428" y="46">Pod &#215;3</text><text class="sub" x="428" y="66">your container</text>
+    <rect class="box" x="210" y="140" width="150" height="56" rx="6"/>
+    <text class="lbl" x="228" y="164">Service</text><text class="sub" x="228" y="184">ClusterIP + DNS</text>
+    <path class="ln dash" d="M360,162 C450,150 478,116 485,82" marker-end="url(#ah-k8s)"/>
+    <text class="sub" x="372" y="126">selects app=api</text>
+  </svg>
+</div>
   <div class="compare">
     <div class="compare-header"><span class="compare-title">Keep N replicas running</span></div>
     <div class="compare-grid solo">
@@ -8298,6 +8342,20 @@ docker stop api &amp;&amp; docker rm api</code></pre>
 
 <section class="section" id="docker-images" data-lang="docker">
 <p class="section-intro">Images are named <code>repository:tag</code> and live in registries. On your stack that's Azure Container Registry; push there and AKS pulls from it. Under the hood an image is a stack of content-addressed layers shared across images.</p>
+<div class="diagram">
+  <div class="caption">An image = a stack of cached layers</div>
+  <svg viewBox="0 0 540 210" role="img" aria-label="Docker image layers: base at the bottom is cached and shared, the top layer rebuilds on every code change">
+    <defs><marker id="ah-docker" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="context-stroke"/></marker></defs>
+    <rect class="box" x="30" y="20" width="240" height="34" rx="4"/><text class="lbl" x="48" y="42">ENTRYPOINT · config</text>
+    <rect class="box" x="30" y="62" width="240" height="34" rx="4"/><text class="lbl" x="48" y="84">COPY published app</text>
+    <rect class="box" x="30" y="104" width="240" height="34" rx="4"/><text class="lbl" x="48" y="126">RUN dotnet restore</text>
+    <rect class="box accent" x="30" y="146" width="240" height="34" rx="4"/><text class="lbl" x="48" y="168">FROM aspnet:8.0 (base)</text>
+    <line class="ln accent" x1="392" y1="37" x2="276" y2="37" marker-end="url(#ah-docker)"/>
+    <text class="sub" x="398" y="33">changes most —</text><text class="sub" x="398" y="46">rebuilt every time</text>
+    <line class="ln" x1="392" y1="163" x2="276" y2="163" marker-end="url(#ah-docker)"/>
+    <text class="sub" x="398" y="159">stable — cached &amp;</text><text class="sub" x="398" y="172">shared across images</text>
+  </svg>
+</div>
   <div class="compare">
     <div class="compare-header"><span class="compare-title">Tag, push, pull</span></div>
     <div class="compare-grid solo">

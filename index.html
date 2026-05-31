@@ -9028,14 +9028,17 @@ docker run --tmpfs /tmp myapi:<span class="nu">1.4.2</span></code></pre>
     return CMP_LANGS.map(l => '<option value="' + l + '"' + (l === selected ? ' selected' : '') + '>' + LANG_NAMES[l] + '</option>').join('');
   }
   function rebuildTopicOptions(topicSel, a, b, want) {
-    const bKeys = new Set(topicsFor(b).map(t => t.key));
-    const shared = topicsFor(a).filter(t => bKeys.has(t.key));
-    topicSel.innerHTML = shared.map(t => '<option value="' + t.key + '">' + t.label + '</option>').join('');
-    if (shared.length) {
-      topicSel.value = shared.some(t => t.key === want) ? want
-                     : (shared.some(t => t.key === 'basics') ? 'basics' : shared[0].key);
+    // Union of both languages' topics — every topic either side covers is selectable
+    const map = new Map();
+    topicsFor(a).forEach(t => map.set(t.key, t.label));
+    topicsFor(b).forEach(t => { if (!map.has(t.key)) map.set(t.key, t.label); });
+    const list = [...map.entries()];
+    topicSel.innerHTML = list.map(([k, l]) => '<option value="' + k + '">' + l + '</option>').join('');
+    if (list.length) {
+      const keys = list.map(e => e[0]);
+      topicSel.value = keys.includes(want) ? want : (keys.includes('basics') ? 'basics' : keys[0]);
     }
-    return shared.length > 0;
+    return list.length > 0;
   }
   function compareColumn(lang, topic) {
     const sec = document.getElementById(lang + '-' + topic);
